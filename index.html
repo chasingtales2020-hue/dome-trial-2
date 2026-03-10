@@ -1,116 +1,62 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NDSM Geodesic Audio Visual</title>
-    <!-- Tailwind CSS for modern, utility-first styling -->
+    <title>Wild Tide | NDSM</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Three.js for 3D rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600&display=swap');
+        body { margin: 0; background-color: #ffffff; font-family: 'Inter', sans-serif; overflow-x: hidden; color: #1a1a1a; }
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f0f0f0 100%); }
+        .content-overlay { position: relative; z-index: 10; pointer-events: none; transition: opacity 0.5s ease, transform 0.5s ease; }
+        .interactive { pointer-events: auto; }
+        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .status-dot { width: 8px; height: 8px; background-color: #00ff88; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 10px #00ff88; }
         
-        body {
-            margin: 0;
-            background-color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-            color: #1a1a1a;
-        }
+        .hidden-page { opacity: 0; transform: translateY(20px); pointer-events: none; position: absolute; width: 100%; top: 0; }
+        .visible-page { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f0f0f0 100%);
-        }
-
-        .content-overlay {
-            position: relative;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .interactive {
-            pointer-events: auto;
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #00ff88;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-            box-shadow: 0 0 10px #00ff88;
-        }
-
-        /* Custom Scrollbar for a sleek look */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
     </style>
 </head>
 <body>
-
-    <!-- Background 3D Scene Container -->
     <div id="canvas-container"></div>
-
-    <!-- Navigation Header -->
-    <nav class="content-overlay flex justify-between items-center p-8 w-full fixed top-0 left-0">
-        <div class="flex items-center space-x-4">
-            <span class="text-2xl font-bold tracking-tighter">DOME.NDSM</span>
+    
+    <nav class="content-overlay flex justify-between items-center p-8 w-full fixed top-0 left-0 z-50">
+        <div class="flex items-center space-x-4 interactive cursor-pointer" onclick="showPage('landing')">
+            <span class="text-2xl font-bold tracking-tighter">WILD TIDE</span>
             <span class="text-[10px] tracking-[0.3em] uppercase opacity-50 px-3 py-1 border border-black/10 rounded-full">Amsterdam North</span>
         </div>
         <div class="hidden md:flex space-x-12 text-sm font-light tracking-widest uppercase interactive">
-            <a href="#" class="hover:opacity-50 transition-opacity">Experience</a>
+            <button onclick="showPage('experience')" class="hover:opacity-50 transition-opacity">Experience</button>
             <a href="#" class="hover:opacity-50 transition-opacity">Architecture</a>
             <a href="#" class="hover:opacity-50 transition-opacity">Location</a>
         </div>
-        <button class="interactive border border-black/10 px-6 py-2 rounded-full text-xs hover:bg-black hover:text-white transition-all">
-            BOOK VISIT
-        </button>
+        <button class="interactive border border-black/10 px-6 py-2 rounded-full text-xs hover:bg-black hover:text-white transition-all">BOOK VISIT</button>
     </nav>
 
-    <!-- Main Content Layer -->
-    <main class="content-overlay min-h-screen pt-40 px-8 pb-20">
+    <!-- LANDING PAGE -->
+    <main id="page-landing" class="content-overlay min-h-screen pt-40 px-8 pb-20 visible-page">
         <div class="max-w-7xl mx-auto">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-20">
                 <section>
-                    <h1 class="text-6xl md:text-8xl font-thin tracking-tighter leading-none mb-8">
-                        Resonant<br><span class="font-semibold">Geometry.</span>
-                    </h1>
-                    <p class="max-w-md text-lg font-light leading-relaxed opacity-70 mb-12">
-                        A floating immersive sanctuary located in the heart of the North Docklands. Merging generative soundscapes with advanced geodesic architecture.
-                    </p>
-                    
+                    <h1 class="text-6xl md:text-8xl font-thin tracking-tighter leading-none mb-8">Wild<br><span class="font-semibold">Tide.</span></h1>
+                    <p class="max-w-md text-lg font-light leading-relaxed opacity-70 mb-12">A floating immersive sanctuary located in the heart of the North Docklands. Merging generative soundscapes with advanced geodesic architecture.</p>
                     <div class="space-y-6">
                         <div class="glass-card p-6 rounded-2xl max-w-xs interactive shadow-sm">
-                            <div class="flex items-center mb-2">
-                                <span class="status-dot"></span>
-                                <span class="text-[10px] uppercase tracking-widest font-bold">Live Acoustics</span>
-                            </div>
+                            <div class="flex items-center mb-2"><span class="status-dot"></span><span class="text-[10px] uppercase tracking-widest font-bold">Live Acoustics</span></div>
                             <p class="text-sm opacity-60">Frequency response: 22Hz - 18kHz</p>
                             <p class="text-sm opacity-60">Visual sync: 120fps</p>
                         </div>
-
                         <div class="flex space-x-4 interactive">
-                            <button id="toggle-audio" class="bg-black text-white px-8 py-4 rounded-full text-sm flex items-center space-x-3 hover:scale-105 transition-transform">
-                                <span>START SESSION</span>
-                            </button>
+                            <button id="toggle-audio" class="bg-black text-white px-8 py-4 rounded-full text-sm flex items-center space-x-3 hover:scale-105 transition-transform"><span>START SESSION</span></button>
                         </div>
                     </div>
                 </section>
-
                 <aside class="flex flex-col justify-end items-end space-y-20 pb-20">
                     <div class="text-right">
                         <span class="text-[10px] uppercase tracking-[0.5em] opacity-30">Coordinates</span>
@@ -118,161 +64,144 @@
                     </div>
                     <div class="text-right max-w-xs">
                         <span class="text-[10px] uppercase tracking-[0.5em] opacity-30">Materials</span>
-                        <p class="text-sm font-light leading-relaxed opacity-60">
-                            Carbon-reinforced polymer mesh with integrated OLED crystalline panels and 360-degree spatial audio arrays.
-                        </p>
+                        <p class="text-sm font-light leading-relaxed opacity-60">Carbon-reinforced polymer mesh with integrated OLED crystalline panels and 360-degree spatial audio arrays.</p>
                     </div>
                 </aside>
             </div>
         </div>
     </main>
 
+    <!-- EXPERIENCE PAGE -->
+    <main id="page-experience" class="content-overlay min-h-screen pt-40 px-8 pb-20 hidden-page">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-20">
+                <span class="text-[10px] uppercase tracking-[0.5em] opacity-40">The Experience</span>
+                <h2 class="text-5xl font-semibold tracking-tighter mt-4">Sensory Immersion.</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 interactive">
+                <div class="glass-card p-10 rounded-3xl hover:bg-black hover:text-white transition-all cursor-default group">
+                    <h3 class="text-xl font-bold mb-4">01. Sonic</h3>
+                    <p class="text-sm opacity-60 group-hover:opacity-80">Spatial audio arrays track your movement within the hemisphere, creating a unique soundscape for every visitor.</p>
+                </div>
+                <div class="glass-card p-10 rounded-3xl hover:bg-black hover:text-white transition-all cursor-default group">
+                    <h3 class="text-xl font-bold mb-4">02. Visual</h3>
+                    <p class="text-sm opacity-60 group-hover:opacity-80">Generative visuals mapped onto the carbon-polymer mesh react to both environmental data and human presence.</p>
+                </div>
+                <div class="glass-card p-10 rounded-3xl hover:bg-black hover:text-white transition-all cursor-default group">
+                    <h3 class="text-xl font-bold mb-4">03. Tactile</h3>
+                    <p class="text-sm opacity-60 group-hover:opacity-80">Vibrational haptics integrated into the floating floor sync with the low-frequency pulses of the docklands tide.</p>
+                </div>
+            </div>
+
+            <button onclick="showPage('landing')" class="mt-20 interactive text-sm tracking-widest uppercase opacity-40 hover:opacity-100 transition-opacity">
+                ← Back to Overview
+            </button>
+        </div>
+    </main>
+
     <script>
-        /**
-         * THREE.JS AUDIO-VISUAL ENGINE
-         */
         let scene, camera, renderer, dome, wireframe, particles;
         let clock = new THREE.Clock();
         let isPlaying = false;
         let targetIntensity = 0;
         let currentIntensity = 0;
 
+        // Page Switcher Logic
+        function showPage(pageId) {
+            const landing = document.getElementById('page-landing');
+            const experience = document.getElementById('page-experience');
+
+            if (pageId === 'experience') {
+                landing.classList.replace('visible-page', 'hidden-page');
+                experience.classList.replace('hidden-page', 'visible-page');
+                // Optional: Change 3D behavior for this page
+                isPlaying = true; 
+            } else {
+                experience.classList.replace('visible-page', 'hidden-page');
+                landing.classList.replace('hidden-page', 'visible-page');
+            }
+        }
+
         function init() {
-            // Setup Scene & Camera
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            
-            // Setup Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
             document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-            // Light sources
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-            scene.add(ambientLight);
-
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
             const pointLight = new THREE.PointLight(0x0000ff, 1, 100);
             pointLight.position.set(10, 10, 10);
             scene.add(pointLight);
-
-            // Geodesic Dome (Icosahedron)
-            const geometry = new THREE.IcosahedronGeometry(4, 3);
-            const material = new THREE.MeshPhongMaterial({
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.1,
-                shininess: 100
-            });
             
-            dome = new THREE.Mesh(geometry, material);
-            scene.add(dome);
-
-            // Geometric Wireframe Overlay
-            const wireframeGeo = new THREE.WireframeGeometry(geometry);
-            const wireframeMat = new THREE.LineBasicMaterial({ 
-                color: 0x000000, 
+            const geometry = new THREE.SphereGeometry(4, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0xffffff, 
                 transparent: true, 
-                opacity: 0.2 
+                opacity: 0.1, 
+                shininess: 100,
+                side: THREE.DoubleSide 
             });
-            wireframe = new THREE.LineSegments(wireframeGeo, wireframeMat);
+            dome = new THREE.Mesh(geometry, material);
+            dome.rotation.x = 0.2;
+            scene.add(dome);
+            
+            wireframe = new THREE.LineSegments(new THREE.WireframeGeometry(geometry), new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2 }));
             dome.add(wireframe);
-
-            // Ambient Particle Field
+            
             const partGeo = new THREE.BufferGeometry();
-            const partCount = 500;
-            const posArray = new Float32Array(partCount * 3);
-            
-            for(let i=0; i < partCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 20;
-            }
+            const posArray = new Float32Array(500 * 3);
+            for(let i=0; i < 1500; i++) posArray[i] = (Math.random() - 0.5) * 20;
             partGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            
-            const partMat = new THREE.PointsMaterial({
-                size: 0.02,
-                color: 0x000000,
-                transparent: true,
-                opacity: 0.4
-            });
-            
-            particles = new THREE.Points(partGeo, partMat);
+            particles = new THREE.Points(partGeo, new THREE.PointsMaterial({ size: 0.02, color: 0x000000, transparent: true, opacity: 0.4 }));
             scene.add(particles);
-
-            camera.position.z = 10;
-            camera.position.y = 1;
-
-            // Handle responsiveness
-            window.addEventListener('resize', onWindowResize, false);
             
-            // UI Controls
+            camera.position.z = 12;
+            camera.position.y = 2;
+            
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
             document.getElementById('toggle-audio').addEventListener('click', function() {
                 isPlaying = !isPlaying;
                 this.innerText = isPlaying ? "PAUSE SESSION" : "START SESSION";
-                this.classList.toggle('bg-blue-600');
             });
-
             animate();
         }
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        /**
-         * ENGINE LOOP
-         */
         function animate() {
             requestAnimationFrame(animate);
             const t = clock.getElapsedTime();
-
-            // Frequency Intensity Management
-            if (isPlaying) {
-                targetIntensity = 0.5 + Math.sin(t * 2) * 0.4;
-            } else {
-                targetIntensity = 0;
-            }
+            targetIntensity = isPlaying ? 0.5 + Math.sin(t * 2) * 0.4 : 0;
             currentIntensity += (targetIntensity - currentIntensity) * 0.1;
-
-            // Rotation Logic
             dome.rotation.y += 0.002;
-            dome.rotation.x = Math.sin(t * 0.5) * 0.1;
-
-            // Vertex Deformation (The Pulsing Effect)
-            const positionAttribute = dome.geometry.getAttribute('position');
             
-            for (let i = 0; i < positionAttribute.count; i++) {
-                const x = positionAttribute.getX(i);
-                const y = positionAttribute.getY(i);
-                const z = positionAttribute.getZ(i);
+            const pos = dome.geometry.getAttribute('position');
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i);
+                const y = pos.getY(i);
+                const z = pos.getZ(i);
                 
                 const vector = new THREE.Vector3(x, y, z);
                 vector.normalize();
                 
-                // Sine-based noise simulation for audio peaks
-                const noise = Math.sin(x * 2 + t * 4) * Math.cos(y * 2 + t * 3) * currentIntensity;
-                const newScale = 4 + noise;
+                const noise = Math.sin(x * 1.5 + t * 3) * Math.cos(z * 1.5 + t * 2) * currentIntensity;
+                const newLength = 4 + noise;
                 
-                vector.multiplyScalar(newScale);
-                positionAttribute.setXYZ(i, vector.x, vector.y, vector.z);
+                vector.multiplyScalar(newLength);
+                pos.setXYZ(i, vector.x, vector.y, vector.z);
             }
-            positionAttribute.needsUpdate = true;
+            pos.needsUpdate = true;
             
-            // Sync wireframe with deformed geometry
             wireframe.geometry.dispose();
             wireframe.geometry = new THREE.WireframeGeometry(dome.geometry);
-
-            // Background ambience movement
             particles.rotation.y -= 0.001;
-            particles.position.y = Math.sin(t) * 0.2;
-
-            // Subtle parallax camera drift
-            camera.position.x += (Math.sin(t * 0.3) * 0.5 - camera.position.x) * 0.05;
-
             renderer.render(scene, camera);
         }
-
         window.onload = init;
     </script>
 </body>
+</html>
