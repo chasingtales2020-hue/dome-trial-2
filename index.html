@@ -3,124 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wild Tide | NDSM</title>
+    <title>NDSM Dome</title>
+    <!-- Tailwind CSS for layout -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js for 3D graphics -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600&display=swap');
-        body { margin: 0; background-color: #ffffff; font-family: 'Inter', sans-serif; overflow-x: hidden; color: #1a1a1a; }
-        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f0f0f0 100%); }
-        .content-overlay { position: relative; z-index: 10; pointer-events: none; transition: opacity 0.5s ease, transform 0.5s ease; }
-        .interactive { pointer-events: auto; }
-        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .status-dot { width: 8px; height: 8px; background-color: #00ff88; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 10px #00ff88; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700&display=swap');
         
-        .hidden-page { opacity: 0; transform: translateY(20px); pointer-events: none; position: absolute; width: 100%; top: 0; }
-        .visible-page { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        body { margin: 0; background-color: #ffffff; font-family: 'Inter', sans-serif; overflow-x: hidden; color: #1a1a1a; }
+        
+        #canvas-container { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            z-index: 0; 
+            background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f0f0f0 100%); 
+        }
 
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        .content-overlay { 
+            position: relative; 
+            z-index: 10; 
+            pointer-events: none; 
+            transition: opacity 0.5s ease, transform 0.5s ease; 
+        }
+
+        .interactive { pointer-events: auto; }
+
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+        }
+        
+        /* Navigation Visibility Logic */
+        .hidden-page { display: none; opacity: 0; transform: translateY(20px); pointer-events: none; }
+        .visible-page { display: block; opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        /* Full-screen Overlays */
+        .slide-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .slide-overlay.active {
+            transform: translateY(0);
+        }
+
+        /* Modal Styles */
+        #contact-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        #contact-modal.active {
+            display: flex;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            z-index: 110;
+        }
+
+        /* UNIFIED BUTTON STYLES */
+        .nav-btn {
+            background: transparent;
+            border: 1px solid rgba(0,0,0,0.15);
+            padding: 0 1.6rem;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #1a1a1a;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            pointer-events: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 48px;
+            line-height: 1.25;
+            min-width: 140px;
+        }
+
+        .nav-btn:hover {
+            background: #1a1a1a !important;
+            color: #ffffff !important;
+            border-color: #1a1a1a !important;
+            transform: translateY(-1px);
+        }
+
+        .nav-btn-dark {
+            background: #1a1a1a;
+            color: #ffffff;
+            border: 1px solid #1a1a1a;
+            padding: 0 2rem;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            pointer-events: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+        }
+
+        .nav-btn-dark:hover {
+            background: #333;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        .portfolio-title { font-size: clamp(3.5rem, 12vw, 8rem); line-height: 0.85; letter-spacing: -0.05em; font-weight: 700; }
     </style>
 </head>
 <body>
+
     <div id="canvas-container"></div>
     
+    <!-- CONTACT MODAL -->
+    <div id="contact-modal" class="interactive">
+        <div class="close-btn">
+            <button onclick="toggleModal(false)" class="nav-btn-dark">Close</button>
+        </div>
+        <div class="max-w-md w-full p-8">
+            <h2 class="text-4xl font-semibold tracking-tighter mb-2">Get in Touch.</h2>
+            <p class="text-sm opacity-50 mb-8 uppercase tracking-widest font-semibold">NDSM Dome Inquiry</p>
+            
+            <form action="https://formspree.io/f/xanyvqqv" method="POST" class="flex flex-col space-y-4">
+                <input type="hidden" name="_to" value="Chasingtales2020@gmail.com">
+                <div class="flex flex-col">
+                    <label class="text-[10px] uppercase tracking-widest mb-2 font-bold opacity-40">Full Name</label>
+                    <input type="text" name="name" placeholder="Enter your name" required class="border-b border-black/10 py-2 focus:outline-none focus:border-black">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[10px] uppercase tracking-widest mb-2 font-bold opacity-40">Email Address</label>
+                    <input type="email" name="email" placeholder="email@example.com" required class="border-b border-black/10 py-2 focus:outline-none focus:border-black">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[10px] uppercase tracking-widest mb-2 font-bold opacity-40">Your Message</label>
+                    <textarea name="message" rows="4" placeholder="How can we help you?..." required class="border-b border-black/10 py-2 focus:outline-none focus:border-black resize-none"></textarea>
+                </div>
+                <button type="submit" class="nav-btn-dark w-full mt-4" style="height: 56px;">Send Message</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- OVERLAYS -->
+    <div id="location-overlay" class="slide-overlay interactive">
+        <div class="close-btn">
+            <button onclick="toggleOverlay('location-overlay', false)" class="nav-btn-dark">Close Map</button>
+        </div>
+        <iframe src="https://kaapdegroenehoop.nl" class="w-full h-full border-none"></iframe>
+    </div>
+
+    <div id="architecture-overlay" class="slide-overlay interactive">
+        <div class="close-btn">
+            <button onclick="toggleOverlay('architecture-overlay', false)" class="nav-btn-dark">Close Gallery</button>
+        </div>
+        <iframe src="https://www.cultvr.cymru/theatre-dome/" class="w-full h-full border-none"></iframe>
+    </div>
+
+    <div id="ndsm-overlay" class="slide-overlay interactive">
+        <div class="close-btn">
+            <button onclick="toggleOverlay('ndsm-overlay', false)" class="nav-btn-dark">Close NDSM</button>
+        </div>
+        <iframe src="https://ndsm.nl/en/" class="w-full h-full border-none"></iframe>
+    </div>
+    
+    <!-- NAVIGATION (PERSISTENT) -->
     <nav class="content-overlay flex justify-between items-center p-8 w-full fixed top-0 left-0 z-50">
-        <div class="flex items-center space-x-4 interactive cursor-pointer" onclick="showPage('landing')">
-            <span class="text-2xl font-bold tracking-tighter">WILD TIDE</span>
-            <span class="text-[10px] tracking-[0.3em] uppercase opacity-50 px-3 py-1 border border-black/10 rounded-full">Amsterdam North</span>
+        <div class="flex items-center space-x-6">
+            <div class="interactive cursor-pointer" onclick="showPage('landing')">
+                <span class="text-2xl font-bold tracking-tighter">NDSM DOME</span>
+            </div>
+            <button onclick="toggleOverlay('ndsm-overlay', true)" class="nav-btn">
+                Amsterdam Noord<br>NDSM
+            </button>
         </div>
-        <div class="hidden md:flex space-x-12 text-sm font-light tracking-widest uppercase interactive">
-            <button onclick="showPage('experience')" class="hover:opacity-50 transition-opacity">Experience</button>
-            <a href="#" class="hover:opacity-50 transition-opacity">Architecture</a>
-            <a href="#" class="hover:opacity-50 transition-opacity">Location</a>
+        <div class="hidden md:flex space-x-3 items-center interactive">
+            <button onclick="toggleOverlay('location-overlay', true)" class="nav-btn">Proposed Location</button>
+            <button onclick="toggleOverlay('architecture-overlay', true)" class="nav-btn">CultVR Dome<br>Cardiff</button>
+            <button onclick="showPage('experience')" class="nav-btn">Experience</button>
+            <button onclick="toggleModal(true)" class="nav-btn-dark">CONTACT US</button>
         </div>
-        <button class="interactive border border-black/10 px-6 py-2 rounded-full text-xs hover:bg-black hover:text-white transition-all">BOOK VISIT</button>
     </nav>
 
-    <!-- LANDING PAGE -->
+    <!-- PAGE 1: LANDING -->
     <main id="page-landing" class="content-overlay min-h-screen pt-40 px-8 pb-20 visible-page">
         <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-20">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <section>
-                    <h1 class="text-6xl md:text-8xl font-thin tracking-tighter leading-none mb-8">Wild<br><span class="font-semibold">Tide.</span></h1>
-                    <p class="max-w-md text-lg font-light leading-relaxed opacity-70 mb-12">A floating immersive sanctuary located in the heart of the North Docklands. Merging generative soundscapes with advanced geodesic architecture.</p>
-                    <div class="space-y-6">
-                        <div class="glass-card p-6 rounded-2xl max-w-xs interactive shadow-sm">
-                            <div class="flex items-center mb-2"><span class="status-dot"></span><span class="text-[10px] uppercase tracking-widest font-bold">Live Acoustics</span></div>
-                            <p class="text-sm opacity-60">Frequency response: 22Hz - 18kHz</p>
-                            <p class="text-sm opacity-60">Visual sync: 120fps</p>
-                        </div>
-                        <div class="flex space-x-4 interactive">
-                            <button id="toggle-audio" class="bg-black text-white px-8 py-4 rounded-full text-sm flex items-center space-x-3 hover:scale-105 transition-transform"><span>START SESSION</span></button>
-                        </div>
+                    <h1 class="text-6xl md:text-8xl font-thin tracking-tighter leading-none mb-8">NDSM<br><span class="font-semibold">Dome.</span></h1>
+                    <p class="max-w-md text-lg font-light leading-relaxed opacity-70 mb-12">A floating immersive sanctuary located in the heart of the North Docklands. Merging generative soundscapes with advanced hexagonal geodesic architecture.</p>
+                    <div class="flex space-x-4 interactive">
+                        <button onclick="showPage('portfolio')" class="nav-btn-dark" style="height: 54px; padding: 0 3rem;">CHASING TALE PROJECTS</button>
                     </div>
                 </section>
-                <aside class="flex flex-col justify-end items-end space-y-20 pb-20">
-                    <div class="text-right">
-                        <span class="text-[10px] uppercase tracking-[0.5em] opacity-30">Coordinates</span>
-                        <p class="text-xl font-light">52.4021° N, 4.8937° E</p>
-                    </div>
-                    <div class="text-right max-w-xs">
-                        <span class="text-[10px] uppercase tracking-[0.5em] opacity-30">Materials</span>
-                        <p class="text-sm font-light leading-relaxed opacity-60">Carbon-reinforced polymer mesh with integrated OLED crystalline panels and 360-degree spatial audio arrays.</p>
+                <aside class="interactive">
+                    <div class="rounded-3xl overflow-hidden shadow-2xl glass-card">
+                        <img src="pitch deckimage 1 Cardiff Amsterdam Dome.jpg" alt="NDSM Dome Concept" class="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-1000" onerror="this.style.display='none'">
                     </div>
                 </aside>
             </div>
         </div>
     </main>
 
-    <!-- EXPERIENCE PAGE -->
-    <main id="page-experience" class="content-overlay min-h-screen pt-40 px-8 pb-20 hidden-page">
+    <!-- PAGE 2: PORTFOLIO (INTEGRATED FROM CHASING TALES) -->
+    <main id="page-portfolio" class="content-overlay min-h-screen pt-40 px-8 pb-20 hidden-page">
         <div class="max-w-7xl mx-auto">
+            <h1 class="portfolio-title mb-6 md:mb-8">NDSM<br><span class="font-thin opacity-50">Dome.</span></h1>
+            <p class="max-w-xs md:max-w-md text-base md:text-xl font-light leading-relaxed opacity-70 mb-8 md:mb-12">
+                A floating immersive sanctuary located in the heart of the Amsterdam Noord NDSM Docklands. Merging Visuals & Soundscapes within a geodesic dome architecture.
+            </p>
+            <div class="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4 interactive">
+                <button onclick="showPage('landing')" class="nav-btn">← Back Home</button>
+                <button onclick="toggleOverlay('location-overlay', true)" class="nav-btn">→ Location</button>
+                <button onclick="toggleOverlay('architecture-overlay', true)" class="nav-btn">→ CultVR Lab</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- PAGE 3: EXPERIENCE -->
+    <main id="page-experience" class="content-overlay min-h-screen pt-40 px-8 pb-20 hidden-page">
+        <div class="max-w-7xl mx-auto text-center">
             <div class="mb-20">
-                <span class="text-[10px] uppercase tracking-[0.5em] opacity-40">The Experience</span>
+                <span class="text-[10px] uppercase tracking-[0.5em] opacity-40 font-semibold">The Experience</span>
                 <h2 class="text-5xl font-semibold tracking-tighter mt-4">Sensory Immersion.</h2>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 interactive">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 interactive text-left">
                 <div class="glass-card p-10 rounded-3xl hover:bg-black hover:text-white transition-all cursor-default group">
-                    <h3 class="text-xl font-bold mb-4">01. Sonic</h3>
-                    <p class="text-sm opacity-60 group-hover:opacity-80">Spatial audio arrays track your movement within the hemisphere, creating a unique soundscape for every visitor.</p>
+                    <h3 class="text-xl font-bold mb-4 uppercase tracking-widest text-xs border-b border-black/10 pb-2">01. Sonic</h3>
+                    <p class="text-sm opacity-60 group-hover:opacity-80">Spatial audio arrays track movement within the geodesic grid.</p>
                 </div>
                 <div class="glass-card p-10 rounded-3xl hover:bg-black hover:text-white transition-all cursor-default group">
-                    <h3 class="text-xl font-bold mb-4">02. Visual</h3>
-                    <p class="text-sm opacity-60 group-hover:opacity-80">Generative visuals mapped onto the carbon-polymer mesh react to both environmental data and human presence.</p>
+                    <h3 class="text-xl font-bold mb-4 uppercase tracking-widest text-xs border-b border-black/10 pb-2">02. Visual</h3>
+                    <p class="text-sm opacity-60 group-hover:opacity-80">Experience 360 full dome films and generative visual artworks.</p>
                 </div>
                 <div class="glass-card p-10 rounded-3xl hover:bg-black hover:text-white transition-all cursor-default group">
-                    <h3 class="text-xl font-bold mb-4">03. Tactile</h3>
-                    <p class="text-sm opacity-60 group-hover:opacity-80">Vibrational haptics integrated into the floating floor sync with the low-frequency pulses of the docklands tide.</p>
+                    <h3 class="text-xl font-bold mb-4 uppercase tracking-widest text-xs border-b border-black/10 pb-2">03. Tactile</h3>
+                    <p class="text-sm opacity-60 group-hover:opacity-80">Vibrational haptics integrated into the floating floor sync with the tide.</p>
                 </div>
             </div>
-
-            <button onclick="showPage('landing')" class="mt-20 interactive text-sm tracking-widest uppercase opacity-40 hover:opacity-100 transition-opacity">
-                ← Back to Overview
-            </button>
+            <div class="mt-20 interactive">
+                <button onclick="showPage('landing')" class="nav-btn">← Back to Overview</button>
+            </div>
         </div>
     </main>
 
     <script>
-        let scene, camera, renderer, dome, wireframe, particles;
-        let clock = new THREE.Clock();
-        let isPlaying = false;
-        let targetIntensity = 0;
-        let currentIntensity = 0;
+        let scene, camera, renderer, domeGroup;
 
-        // Page Switcher Logic
+        // View Controller
         function showPage(pageId) {
-            const landing = document.getElementById('page-landing');
-            const experience = document.getElementById('page-experience');
+            const pages = ['landing', 'portfolio', 'experience'];
+            pages.forEach(p => {
+                const el = document.getElementById('page-' + p);
+                if (p === pageId) {
+                    el.classList.remove('hidden-page');
+                    el.classList.add('visible-page');
+                } else {
+                    el.classList.remove('visible-page');
+                    el.classList.add('hidden-page');
+                }
+            });
+            window.scrollTo(0, 0);
+        }
 
-            if (pageId === 'experience') {
-                landing.classList.replace('visible-page', 'hidden-page');
-                experience.classList.replace('hidden-page', 'visible-page');
-                // Optional: Change 3D behavior for this page
-                isPlaying = true; 
-            } else {
-                experience.classList.replace('visible-page', 'hidden-page');
-                landing.classList.replace('hidden-page', 'visible-page');
-            }
+        function toggleOverlay(id, show) {
+            const overlay = document.getElementById(id);
+            if (show) overlay.classList.add('active');
+            else overlay.classList.remove('active');
+        }
+
+        function toggleModal(show) {
+            const modal = document.getElementById('contact-modal');
+            if (show) modal.classList.add('active');
+            else modal.classList.remove('active');
         }
 
         function init() {
@@ -128,79 +308,44 @@
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             document.getElementById('canvas-container').appendChild(renderer.domElement);
-            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-            const pointLight = new THREE.PointLight(0x0000ff, 1, 100);
-            pointLight.position.set(10, 10, 10);
-            scene.add(pointLight);
+
+            domeGroup = new THREE.Group();
+            const geo = new THREE.IcosahedronGeometry(6, 3).toNonIndexed();
+            const posAttr = geo.attributes.position;
+            const lineMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.12 });
             
-            const geometry = new THREE.SphereGeometry(4, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2);
-            const material = new THREE.MeshPhongMaterial({ 
-                color: 0xffffff, 
-                transparent: true, 
-                opacity: 0.1, 
-                shininess: 100,
-                side: THREE.DoubleSide 
-            });
-            dome = new THREE.Mesh(geometry, material);
-            dome.rotation.x = 0.2;
-            scene.add(dome);
+            for (let i = 0; i < posAttr.count; i += 3) {
+                const vA = new THREE.Vector3().fromBufferAttribute(posAttr, i);
+                const vB = new THREE.Vector3().fromBufferAttribute(posAttr, i + 1);
+                const vC = new THREE.Vector3().fromBufferAttribute(posAttr, i + 2);
+                if (vA.y >= -1.5) {
+                    const edgeGeom = new THREE.EdgesGeometry(new THREE.BufferGeometry().setFromPoints([vA, vB, vC]));
+                    const line = new THREE.LineSegments(edgeGeom, lineMat);
+                    domeGroup.add(line);
+                }
+            }
+            scene.add(domeGroup);
             
-            wireframe = new THREE.LineSegments(new THREE.WireframeGeometry(geometry), new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2 }));
-            dome.add(wireframe);
-            
-            const partGeo = new THREE.BufferGeometry();
-            const posArray = new Float32Array(500 * 3);
-            for(let i=0; i < 1500; i++) posArray[i] = (Math.random() - 0.5) * 20;
-            partGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            particles = new THREE.Points(partGeo, new THREE.PointsMaterial({ size: 0.02, color: 0x000000, transparent: true, opacity: 0.4 }));
-            scene.add(particles);
-            
-            camera.position.z = 12;
-            camera.position.y = 2;
-            
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-            document.getElementById('toggle-audio').addEventListener('click', function() {
-                isPlaying = !isPlaying;
-                this.innerText = isPlaying ? "PAUSE SESSION" : "START SESSION";
-            });
+            const isMobile = window.innerWidth < 768;
+            camera.position.set(isMobile ? 0 : 5, 2, 12);
+            camera.lookAt(0,0,0);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                domeGroup.rotation.y += 0.0006;
+                renderer.render(scene, camera);
+            }
             animate();
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            const t = clock.getElapsedTime();
-            targetIntensity = isPlaying ? 0.5 + Math.sin(t * 2) * 0.4 : 0;
-            currentIntensity += (targetIntensity - currentIntensity) * 0.1;
-            dome.rotation.y += 0.002;
-            
-            const pos = dome.geometry.getAttribute('position');
-            for (let i = 0; i < pos.count; i++) {
-                const x = pos.getX(i);
-                const y = pos.getY(i);
-                const z = pos.getZ(i);
-                
-                const vector = new THREE.Vector3(x, y, z);
-                vector.normalize();
-                
-                const noise = Math.sin(x * 1.5 + t * 3) * Math.cos(z * 1.5 + t * 2) * currentIntensity;
-                const newLength = 4 + noise;
-                
-                vector.multiplyScalar(newLength);
-                pos.setXYZ(i, vector.x, vector.y, vector.z);
-            }
-            pos.needsUpdate = true;
-            
-            wireframe.geometry.dispose();
-            wireframe.geometry = new THREE.WireframeGeometry(dome.geometry);
-            particles.rotation.y -= 0.001;
-            renderer.render(scene, camera);
-        }
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
         window.onload = init;
     </script>
 </body>
